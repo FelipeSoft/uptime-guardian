@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 	"time"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/domain"
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
 type EndpointRepositoryMySQL struct {
@@ -17,7 +17,7 @@ func NewEndpointRepositoryMySQL(db *sql.DB) *EndpointRepositoryMySQL {
 }
 
 func (r *EndpointRepositoryMySQL) GetAll() ([]*domain.Endpoint, error) {
-	rows, err := r.db.Query("SELECT `id`, `address`, `interval`, `timeout`, `created_at` FROM endpoint")
+	rows, err := r.db.Query("SELECT `id`, `url`, `method`, `interval`, `timeout`, `created_at` FROM endpoint")
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (r *EndpointRepositoryMySQL) GetAll() ([]*domain.Endpoint, error) {
 
 	for rows.Next() {
 		var e domain.Endpoint
-		err = rows.Scan(&e.ID, &e.Address, &e.Interval, &e.Timeout, &e.CreatedAt)
+		err = rows.Scan(&e.ID, &e.URL, &e.Method, &e.Interval, &e.Timeout, &e.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -38,10 +38,10 @@ func (r *EndpointRepositoryMySQL) GetAll() ([]*domain.Endpoint, error) {
 }
 
 func (r *EndpointRepositoryMySQL) GetById(id uint64) (*domain.Endpoint, error) {
-	row := r.db.QueryRow("SELECT `id`, `address`, `interval`, `timeout`, `created_at` FROM endpoint WHERE id = ?", id)
+	row := r.db.QueryRow("SELECT `id`, `url`, `method`, `interval`, `timeout`, `created_at` FROM endpoint WHERE id = ?", id)
 	
 	var e domain.Endpoint
-	err := row.Scan(&e.ID, &e.Address, &e.Interval, &e.Timeout, &e.CreatedAt)
+	err := row.Scan(&e.ID, &e.URL, &e.Method, &e.Interval, &e.Timeout, &e.CreatedAt)
 
 	if err != nil {
 		return nil, err
@@ -51,8 +51,8 @@ func (r *EndpointRepositoryMySQL) GetById(id uint64) (*domain.Endpoint, error) {
 }
 
 func (r *EndpointRepositoryMySQL) Create(endpoint *domain.Endpoint) error {
-	rows, err := r.db.Query("INSERT INTO endpoint (`address`, `interval`, `timeout`, `created_at`) VALUES (?,?,?,?)",
-	endpoint.Address, endpoint.Interval, endpoint.Timeout, time.Now())
+	rows, err := r.db.Query("INSERT INTO endpoint (`url`, `method`, `interval`, `timeout`, `created_at`) VALUES (?,?,?,?)",
+	endpoint.URL, endpoint.Method, endpoint.Interval, endpoint.Timeout, time.Now())
 
 	if err != nil {
 		return err
@@ -63,8 +63,8 @@ func (r *EndpointRepositoryMySQL) Create(endpoint *domain.Endpoint) error {
 }
 
 func (r *EndpointRepositoryMySQL) Update(endpoint *domain.Endpoint) error {
-	rows, err := r.db.Query("UPDATE endpoint SET `address` = ?, `interval` = ?, `timeout` = ? WHERE id = ?",
-	endpoint.Address, endpoint.Interval, endpoint.Timeout, endpoint.ID)
+	rows, err := r.db.Query("UPDATE endpoint SET `url`= ?, `method` = ?, `interval`= ?, `timeout` = ? WHERE id = ?",
+	endpoint.URL, endpoint.Method, endpoint.Interval, endpoint.Timeout, endpoint.ID)
 
 	if err != nil {
 		return err

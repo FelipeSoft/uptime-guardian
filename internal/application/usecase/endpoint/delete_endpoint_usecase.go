@@ -1,9 +1,8 @@
-package usecase
+package endpoint_usecase
 
 import (
 	"strconv"
-
-	"github.com/FelipeSoft/uptime-guardian/internal/http/domain"
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
 type DeleteEndpointUseCase struct {

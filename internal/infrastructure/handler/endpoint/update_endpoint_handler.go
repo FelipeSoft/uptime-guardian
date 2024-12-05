@@ -1,16 +1,16 @@
-package handler
+package endpoint_handler
 
 import (
 	"net/http"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/application/usecase"
+	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	"github.com/labstack/echo/v4"
 )
 
 type UpdateEndpointHandler struct {
-	UpdateEndpointUseCase *usecase.UpdateEndpointUseCase
+	UpdateEndpointUseCase *endpoint_usecase.UpdateEndpointUseCase
 }
 
-func NewUpdateEndpointHandler(UpdateEndpointUseCase *usecase.UpdateEndpointUseCase) *UpdateEndpointHandler {
+func NewUpdateEndpointHandler(UpdateEndpointUseCase *endpoint_usecase.UpdateEndpointUseCase) *UpdateEndpointHandler {
 	return &UpdateEndpointHandler{
 		UpdateEndpointUseCase: UpdateEndpointUseCase,
 	}
@@ -21,7 +21,7 @@ func (uc *UpdateEndpointHandler) Execute(c echo.Context) error {
 	if id == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "The 'id' request path value is required"})
 	}
-	payload, ok := c.Get("payload").(*usecase.UpdateEndpointDTO)
+	payload, ok := c.Get("payload").(*endpoint_usecase.UpdateEndpointDTO)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Payload not found"})
 	}

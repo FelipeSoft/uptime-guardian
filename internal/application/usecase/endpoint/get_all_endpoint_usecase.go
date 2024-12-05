@@ -1,7 +1,7 @@
-package usecase
+package endpoint_usecase
 
 import (
-	"github.com/FelipeSoft/uptime-guardian/internal/http/domain"
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
 type GetAllEndpointUseCase struct {
@@ -10,7 +10,8 @@ type GetAllEndpointUseCase struct {
 
 type GetAllEndpointDTO struct {
 	ID        uint64 `json:"id"`
-	Address   string `json:"address"`
+	URL       string `json:"url"`
+	Method    string `json:"method"`
 	Interval  int64  `json:"interval"`
 	Timeout   int64  `json:"timeout"`
 	CreatedAt string `json:"createdAt"`
@@ -32,7 +33,7 @@ func (uc *GetAllEndpointUseCase) Execute() ([]*GetAllEndpointDTO, error) {
 	for e := 0; e < len(res); e++ {
 		output = append(output, &GetAllEndpointDTO{
 			ID:        res[e].ID,
-			Address:   res[e].Address,
+			URL:       res[e].URL,
 			Interval:  res[e].Interval,
 			Timeout:   res[e].Timeout,
 			CreatedAt: res[e].CreatedAt,

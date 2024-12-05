@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"strings"
 
-	"net/http"
-
-	"github.com/FelipeSoft/uptime-guardian/internal/http/application/usecase"
+	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
+	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -15,8 +15,10 @@ import (
 var validate = validator.New()
 
 var PayloadRegistry = map[string]map[string]interface{}{
-	"/endpoint":     {echo.POST: &usecase.CreateEndpointDTO{}},
-	"/endpoint/:id": {echo.PUT: &usecase.UpdateEndpointDTO{}},
+	"/endpoint":     {echo.POST: &endpoint_usecase.CreateEndpointDTO{}},
+	"/endpoint/:id": {echo.PUT: &endpoint_usecase.UpdateEndpointDTO{}},
+	"/host":     {echo.POST: &host_usecase.CreateHostDTO{}},
+	"/host/:id": {echo.PUT: &host_usecase.UpdateHostDTO{}},
 }
 
 func matchRoute(path string) string {

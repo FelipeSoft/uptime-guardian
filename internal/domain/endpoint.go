@@ -2,7 +2,8 @@ package domain
 
 type Endpoint struct {
 	ID        uint64
-	Address   string
+	URL       string
+	Method    string
 	Interval  int64
 	Timeout   int64
 	CreatedAt string

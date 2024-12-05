@@ -1,8 +1,8 @@
-package usecase
+package endpoint_usecase
 
 import (
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 	"strconv"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/domain"
 )
 
 type UpdateEndpointUseCase struct {
@@ -10,9 +10,10 @@ type UpdateEndpointUseCase struct {
 }
 
 type UpdateEndpointDTO struct {
-	Address  string `json:"address" validate:"required"`
-	Interval int64  `json:"interval" validate:"required"`
-	Timeout  int64  `json:"timeout" validate:"required"`
+	URL      string `json:"url"`
+	Method   string `json:"method"`
+	Interval int64  `json:"interval"  validate:"required"`
+	Timeout  int64  `json:"timeout"   validate:"required"`
 }
 
 func NewUpdateEndpointUseCase(repo domain.EndpointRepository) *UpdateEndpointUseCase {
@@ -27,10 +28,11 @@ func (uc *UpdateEndpointUseCase) Execute(id string, dto UpdateEndpointDTO) error
 	if err != nil {
 		return err
 	}
-	
+
 	u := &domain.Endpoint{
-		ID: uint64(parsedId),
-		Address:  dto.Address,
+		ID:       uint64(parsedId),
+		URL:      dto.URL,
+		Method:   dto.Method,
 		Interval: dto.Interval,
 		Timeout:  dto.Timeout,
 	}

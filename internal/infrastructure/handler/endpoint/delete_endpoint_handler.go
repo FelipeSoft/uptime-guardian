@@ -1,16 +1,16 @@
-package handler
+package endpoint_handler
 
 import (
 	"net/http"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/application/usecase"
+	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	"github.com/labstack/echo/v4"
 )
 
 type DeleteEndpointHandler struct {
-	DeleteEndpointUseCase *usecase.DeleteEndpointUseCase
+	DeleteEndpointUseCase *endpoint_usecase.DeleteEndpointUseCase
 }
 
-func NewDeleteEndpointHandler(DeleteEndpointUseCase *usecase.DeleteEndpointUseCase) *DeleteEndpointHandler {
+func NewDeleteEndpointHandler(DeleteEndpointUseCase *endpoint_usecase.DeleteEndpointUseCase) *DeleteEndpointHandler {
 	return &DeleteEndpointHandler{
 		DeleteEndpointUseCase: DeleteEndpointUseCase,
 	}

@@ -1,18 +1,17 @@
-package handler
+package endpoint_handler
 
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/FelipeSoft/uptime-guardian/internal/http/application/usecase"
+	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	"github.com/labstack/echo/v4"
 )
 
 type GetAllEndpointHandler struct {
-	GetAllEndpointUsecase *usecase.GetAllEndpointUseCase
+	GetAllEndpointUsecase *endpoint_usecase.GetAllEndpointUseCase
 }
 
-func NewGetAllEndpointHandler(GetAllEndpointUsecase *usecase.GetAllEndpointUseCase) *GetAllEndpointHandler {
+func NewGetAllEndpointHandler(GetAllEndpointUsecase *endpoint_usecase.GetAllEndpointUseCase) *GetAllEndpointHandler {
 	return &GetAllEndpointHandler{
 		GetAllEndpointUsecase: GetAllEndpointUsecase,
 	}

@@ -4,10 +4,13 @@ import (
 	"database/sql"
 	"log"
 	"os"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/application/middleware"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/application/usecase"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/infrastructure/handler"
-	"github.com/FelipeSoft/uptime-guardian/internal/http/infrastructure/repository"
+
+	"github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
+	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
+	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
+	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
+	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -27,20 +30,33 @@ func main() {
 
 	// Repository
 	endpointRepository := repository.NewEndpointRepositoryMySQL(db)
+	hostRepository := repository.NewHostRepositoryMySQL(db)
 
 	// Use Cases
-	getAllEndpointUseCase := usecase.NewGetAllEndpointUseCase(endpointRepository)
-	getByIdEndpointUseCase := usecase.NewGetByIdEndpointUseCase(endpointRepository)
-	createEndpointUseCase := usecase.NewCreateEndpointUseCase(endpointRepository)
-	updateEndpointUseCase := usecase.NewUpdateEndpointUseCase(endpointRepository)
-	deleteEndpointUseCase := usecase.NewDeleteEndpointUseCase(endpointRepository)
+	getAllEndpointUseCase := endpoint_usecase.NewGetAllEndpointUseCase(endpointRepository)
+	getByIdEndpointUseCase := endpoint_usecase.NewGetByIdEndpointUseCase(endpointRepository)
+	createEndpointUseCase := endpoint_usecase.NewCreateEndpointUseCase(endpointRepository)
+	updateEndpointUseCase := endpoint_usecase.NewUpdateEndpointUseCase(endpointRepository)
+	deleteEndpointUseCase := endpoint_usecase.NewDeleteEndpointUseCase(endpointRepository)
+
+	getAllHostUseCase := host_usecase.NewGetAllHostUseCase(hostRepository)
+	getByIdHostUseCase := host_usecase.NewGetByIdHostUseCase(hostRepository)
+	createHostUseCase := host_usecase.NewCreateHostUseCase(hostRepository)
+	updateHostUseCase := host_usecase.NewUpdateHostUseCase(hostRepository)
+	deleteHostUseCase := host_usecase.NewDeleteHostUseCase(hostRepository)
 
 	// Handlers
-	getAllEndpointHandler := handler.NewGetAllEndpointHandler(getAllEndpointUseCase)
-	getByIdEndpointHandler := handler.NewGetByIdEndpointHandler(getByIdEndpointUseCase)
-	createEndpointHandler := handler.NewCreateEndpointHandler(createEndpointUseCase)
-	updateEndpointHandler := handler.NewUpdateEndpointHandler(updateEndpointUseCase)
-	deleteEndpointHandler := handler.NewDeleteEndpointHandler(deleteEndpointUseCase)
+	getAllEndpointHandler := endpoint_handler.NewGetAllEndpointHandler(getAllEndpointUseCase)
+	getByIdEndpointHandler := endpoint_handler.NewGetByIdEndpointHandler(getByIdEndpointUseCase)
+	createEndpointHandler := endpoint_handler.NewCreateEndpointHandler(createEndpointUseCase)
+	updateEndpointHandler := endpoint_handler.NewUpdateEndpointHandler(updateEndpointUseCase)
+	deleteEndpointHandler := endpoint_handler.NewDeleteEndpointHandler(deleteEndpointUseCase)
+
+	getAllHostHandler := host_handler.NewGetAllHostHandler(getAllHostUseCase)
+	getByIdHostHandler := host_handler.NewGetByIdHostHandler(getByIdHostUseCase)
+	createHostHandler := host_handler.NewCreateHostHandler(createHostUseCase)
+	updateHostHandler := host_handler.NewUpdateHostHandler(updateHostUseCase)
+	deleteHostHandler := host_handler.NewDeleteHostHandler(deleteHostUseCase)
 
 	// Middlewares
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -59,6 +75,12 @@ func main() {
 	e.DELETE("/endpoint/:id", deleteEndpointHandler.Execute)
 	e.GET("/endpoint", getAllEndpointHandler.Execute)
 	e.GET("/endpoint/:id", getByIdEndpointHandler.Execute)
+	
+	e.POST("/host", createHostHandler.Execute)
+	e.PUT("/host/:id", updateHostHandler.Execute)
+	e.DELETE("/host/:id", deleteHostHandler.Execute)
+	e.GET("/host", getAllHostHandler.Execute)
+	e.GET("/host/:id", getByIdHostHandler.Execute)
 
 	e.Logger.Fatal(e.Start(os.Getenv("HTTP_SERVER")))
 }
