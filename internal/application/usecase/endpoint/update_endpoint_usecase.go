@@ -10,8 +10,8 @@ type UpdateEndpointUseCase struct {
 }
 
 type UpdateEndpointDTO struct {
-	URL      string `json:"url"`
-	Method   string `json:"method"`
+	URL      string `json:"url"       validate:"required"`
+	Method   string `json:"method"    validate:"required"`
 	Interval int64  `json:"interval"  validate:"required"`
 	Timeout  int64  `json:"timeout"   validate:"required"`
 }

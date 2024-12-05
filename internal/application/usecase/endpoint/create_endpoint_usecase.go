@@ -1,7 +1,6 @@
 package endpoint_usecase
 
 import (
-	"errors"
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
@@ -10,11 +9,10 @@ type CreateEndpointUseCase struct {
 }
 
 type CreateEndpointDTO struct {
-	IPAddress string `json:"ipAddress"`
-	URL       string `json:"url"`
-	Method    string `json:"method"`
-	Interval  int64  `json:"interval"  validate:"required"`
-	Timeout   int64  `json:"timeout"   validate:"required"`
+	URL      string `json:"url"       validate:"required"`
+	Method   string `json:"method"    validate:"required"`
+	Interval int64  `json:"interval"  validate:"required"`
+	Timeout  int64  `json:"timeout"   validate:"required"`
 }
 
 func NewCreateEndpointUseCase(repo domain.EndpointRepository) *CreateEndpointUseCase {
@@ -24,9 +22,6 @@ func NewCreateEndpointUseCase(repo domain.EndpointRepository) *CreateEndpointUse
 }
 
 func (uc *CreateEndpointUseCase) Execute(dto CreateEndpointDTO) error {
-	if dto.IPAddress == "" && dto.URL == "" {
-		return errors.New("at least IP address or URL should be provided")
-	}
 	u := &domain.Endpoint{
 		URL:      dto.URL,
 		Method:   dto.Method,
