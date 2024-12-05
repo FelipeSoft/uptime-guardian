@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"os"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/http/application/middleware"
 	"github.com/FelipeSoft/uptime-guardian/internal/http/application/usecase"
 	"github.com/FelipeSoft/uptime-guardian/internal/http/infrastructure/handler"

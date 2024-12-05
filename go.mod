@@ -9,7 +9,12 @@ require (
 
 require (
 	github.com/Valgard/go-pcre v0.0.0-20200510215507-235e400e25e9 // indirect
+	github.com/andrewsjg/pro-bing v0.0.0-20230107211332-a5d03150c62c // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+	github.com/robfig/cron v1.2.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
 )
 
 require (
