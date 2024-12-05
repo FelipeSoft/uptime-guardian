@@ -5,9 +5,9 @@ import (
 )
 
 type PingStatistics struct {
-	PacketsSent int     `json:"PackageSent"`
-	PacketLoss  float64 `json:"sentPackages"`
-	PacketsRecv int     `json:"receivedPackages"`
+	PacketsSent int     `json:"packetsSent"`
+	PacketLoss  float64 `json:"packetLoss"`
+	PacketsRecv int     `json:"packetsRecv"`
 }
 
 func TestByICMP(ip string) (*PingStatistics, error) {
