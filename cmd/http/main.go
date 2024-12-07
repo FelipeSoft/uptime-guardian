@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"log"
 	"os"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
+	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
+	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
+	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -29,10 +30,13 @@ func main() {
 	}
 
 	// Repository
+	userRepository := repository.NewUserRepositoryMySQL(db)
 	endpointRepository := repository.NewEndpointRepositoryMySQL(db)
 	hostRepository := repository.NewHostRepositoryMySQL(db)
 
 	// Use Cases
+	authUseCase := auth_usecase.NewAuthUseCase(userRepository)
+
 	getAllEndpointUseCase := endpoint_usecase.NewGetAllEndpointUseCase(endpointRepository)
 	getByIdEndpointUseCase := endpoint_usecase.NewGetByIdEndpointUseCase(endpointRepository)
 	createEndpointUseCase := endpoint_usecase.NewCreateEndpointUseCase(endpointRepository)
@@ -46,6 +50,8 @@ func main() {
 	deleteHostUseCase := host_usecase.NewDeleteHostUseCase(hostRepository)
 
 	// Handlers
+	authHandler := auth_handler.NewAuthHandler(authUseCase)
+
 	getAllEndpointHandler := endpoint_handler.NewGetAllEndpointHandler(getAllEndpointUseCase)
 	getByIdEndpointHandler := endpoint_handler.NewGetByIdEndpointHandler(getByIdEndpointUseCase)
 	createEndpointHandler := endpoint_handler.NewCreateEndpointHandler(createEndpointUseCase)
@@ -64,18 +70,28 @@ func main() {
 			if err := middleware.ValidateRequestBodyDynamic(c); err != nil {
 				return err
 			}
+			return next(c)
+		}
+	})
 
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if err := middleware.VerifyUserAuthentication(c); err != nil {
+				return err
+			}
 			return next(c)
 		}
 	})
 
 	// Routes
+	e.POST("/auth/login", authHandler.LoginUser)
+
 	e.POST("/endpoint", createEndpointHandler.Execute)
 	e.PUT("/endpoint/:id", updateEndpointHandler.Execute)
 	e.DELETE("/endpoint/:id", deleteEndpointHandler.Execute)
 	e.GET("/endpoint", getAllEndpointHandler.Execute)
 	e.GET("/endpoint/:id", getByIdEndpointHandler.Execute)
-	
+
 	e.POST("/host", createHostHandler.Execute)
 	e.PUT("/host/:id", updateHostHandler.Execute)
 	e.DELETE("/host/:id", deleteHostHandler.Execute)

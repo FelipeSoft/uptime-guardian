@@ -1,4 +1,4 @@
-package host_usecase
+package usecase
 
 import (
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"

@@ -1,4 +1,4 @@
-package host_handler
+package handler
 
 import (
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"

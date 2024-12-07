@@ -2,7 +2,7 @@ package domain
 
 type Host struct {
 	ID        uint64
-	IPAddress       string
+	IPAddress string
 	Interval  int64
 	Timeout   int64
 	CreatedAt string

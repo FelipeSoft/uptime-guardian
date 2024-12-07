@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 	"github.com/go-playground/validator/v10"
