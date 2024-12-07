@@ -3,6 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"time"
 
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
@@ -13,9 +15,10 @@ type AuthHandler struct {
 	JwtAdapter  domain.Jwt
 }
 
-func NewAuthHandler(AuthUseCase *auth_usecase.AuthUseCase) *AuthHandler {
+func NewAuthHandler(AuthUseCase *auth_usecase.AuthUseCase, JwtAdapter domain.Jwt) *AuthHandler {
 	return &AuthHandler{
 		AuthUseCase: AuthUseCase,
+		JwtAdapter:  JwtAdapter,
 	}
 }
 
@@ -35,17 +38,30 @@ func (ah *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if authorized {
-		token := ah.JwtAdapter.Generate(&input.Email)
+		token, err := ah.JwtAdapter.Generate(input.Email)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 
-		cookie := new(http.Cookie)
-		cookie.Name = "UPTIME_GUARDIAN_HTTP"
-		cookie.Value = token
-		cookie.HttpOnly = true
+		cookie := http.Cookie{
+			Name:     "UPTIME_GUARDIAN_HTTP",
+			Value:    token,
+			HttpOnly: true,
+			Path:     "/",
+			Expires:  time.Now().Add(time.Hour * 1),
+			SameSite: http.SameSiteLaxMode,
+		}
 
-		// possivelmente pode falhar por causa disso
-		cookie.Secure = true
-		http.SetCookie(w, cookie)
-		w.WriteHeader(http.StatusAccepted)
+		if os.Getenv("ENV") == "production" {
+			cookie.Secure = true
+		}
+		if os.Getenv("ENV") != "production" {
+			cookie.Secure = false
+		}
+
+		http.SetCookie(w, &cookie)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	w.WriteHeader(http.StatusUnauthorized)

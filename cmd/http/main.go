@@ -6,9 +6,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	middleware "github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/adapter"
 	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler"
 	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
 	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
@@ -31,13 +34,17 @@ func main() {
 		log.Fatalf("MySQL Connection Error: %s", err.Error())
 	}
 
+	// Adapters
+	bcryptHashAdapter := adapter.NewBcryptHashAdapter()
+	jwtAdapter := adapter.NewJwtAdapter()
+
 	// Repository
 	userRepository := repository.NewUserRepositoryMySQL(db)
 	endpointRepository := repository.NewEndpointRepositoryMySQL(db)
 	hostRepository := repository.NewHostRepositoryMySQL(db)
 
 	// Use Cases
-	authUseCase := auth_usecase.NewAuthUseCase(userRepository)
+	authUseCase := auth_usecase.NewAuthUseCase(userRepository, bcryptHashAdapter)
 
 	getAllEndpointUseCase := endpoint_usecase.NewGetAllEndpointUseCase(endpointRepository)
 	getByIdEndpointUseCase := endpoint_usecase.NewGetByIdEndpointUseCase(endpointRepository)
@@ -52,7 +59,7 @@ func main() {
 	deleteHostUseCase := host_usecase.NewDeleteHostUseCase(hostRepository)
 
 	// Handlers
-	authHandler := auth_handler.NewAuthHandler(authUseCase)
+	authHandler := auth_handler.NewAuthHandler(authUseCase, jwtAdapter)
 
 	getAllEndpointHandler := endpoint_handler.NewGetAllEndpointHandler(getAllEndpointUseCase)
 	getByIdEndpointHandler := endpoint_handler.NewGetByIdEndpointHandler(getByIdEndpointUseCase)
@@ -67,31 +74,16 @@ func main() {
 	deleteHostHandler := host_handler.NewDeleteHostHandler(deleteHostUseCase)
 
 	// Middlewares
-	// e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-	// 	return func(c echo.Context) error {
-	// 		if err := middleware.ValidateRequestBodyDynamic(c); err != nil {
-	// 			return err
-	// 		}
-	// 		return next(c)
-	// 	}
-	// })
-
-	// e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-	// 	return func(c echo.Context) error {
-	// 		if err := middleware.VerifyUserAuthentication(c); err != nil {
-	// 			return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
-	// 		}
-	// 		return next(c)
-	// 	}
-	// })
+	authMiddleware := middleware.NewAuthMiddleware(jwtAdapter)
 
 	// Routes
-	r.HandleFunc("/auth/login", authHandler.LoginUser)
+	r.HandleFunc("/auth/login", middleware.Limit(authHandler.LoginUser))
 
 	r.HandleFunc("/endpoint/create", createEndpointHandler.Execute)
 	r.HandleFunc("/endpoint/update/{id}", updateEndpointHandler.Execute)
 	r.HandleFunc("/endpoint/delete/{id}", deleteEndpointHandler.Execute)
-	r.HandleFunc("/endpoint", getAllEndpointHandler.Execute)
+
+	r.HandleFunc("/endpoint", authMiddleware.RequireAuthentication(getAllEndpointHandler.Execute))
 	r.HandleFunc("/endpoint/{id}", getByIdEndpointHandler.Execute)
 
 	r.HandleFunc("/host/create", createHostHandler.Execute)

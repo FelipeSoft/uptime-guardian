@@ -1,36 +1,34 @@
 package middleware
 
 import (
-	"errors"
 	"fmt"
-	// "net/http"
-	"slices"
-	"time"
+	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
-var ExcludeRoutes = []string{
-	"/auth/login",
+type AuthMiddleware struct {
+	tokenManager domain.Jwt
 }
 
-func VerifyUserAuthentication(c echo.Context) error {
-	if slices.Contains(ExcludeRoutes, c.Path()) {
-		return nil
+func NewAuthMiddleware(tokenManager domain.Jwt) *AuthMiddleware {
+	return &AuthMiddleware{
+		tokenManager: tokenManager,
 	}
+}
 
-	authCookie, err := c.Cookie("UPTIME_GUARDIAN_HTTP")
-
-	if err != nil {
-		return errors.New("Unauthorized")
-		// return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
-	}
-
-	if authCookie.Expires.Before(time.Now()) {
-		return errors.New("Session expired")
-		// return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Session expired"})
-	}
-
-	fmt.Println(authCookie)
-	return nil
+func (m *AuthMiddleware) RequireAuthentication(next func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("UPTIME_GUARDIAN_HTTP")
+		if r.URL.Path == "/auth/login" {
+			next(w, r)
+			return
+		}
+		fmt.Println(r.Cookies())
+		if err != nil || cookie == nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next(w, r)
+	})
 }

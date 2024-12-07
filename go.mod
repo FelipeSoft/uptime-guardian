@@ -16,6 +16,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/time v0.8.0 // indirect
 )
 
 require (

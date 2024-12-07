@@ -1,23 +1,23 @@
 package usecase
 
 import (
-	"fmt"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
 type AuthUseCase struct {
-	repo domain.UserRepository
+	repo         domain.UserRepository
+	hashable     domain.Hashable
 }
 
 type LoginUserDTO struct {
-	Email    string `json:"email"    validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
-func NewAuthUseCase(repo domain.UserRepository) *AuthUseCase {
+func NewAuthUseCase(repo domain.UserRepository, hashable domain.Hashable) *AuthUseCase {
 	return &AuthUseCase{
-		repo: repo,
+		repo:         repo,
+		hashable:     hashable,
 	}
 }
 
@@ -26,6 +26,9 @@ func (uc *AuthUseCase) LoginUser(dto LoginUserDTO) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	fmt.Println(user)
+	authorized := uc.hashable.Compare(dto.Password, user.Password)
+	if authorized {
+		return true, nil
+	}
 	return false, nil
 }

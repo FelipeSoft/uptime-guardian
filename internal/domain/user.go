@@ -1,12 +1,10 @@
 package domain
 
-import "time"
-
 type User struct {
 	Id        uint64
 	Email     string
 	Password  string
-	CreatedAt time.Time
+	CreatedAt string
 }
 
 type UserRepository interface {
