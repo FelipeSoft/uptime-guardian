@@ -1,10 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
-	"github.com/labstack/echo/v4"
 )
 
 type AuthHandler struct {
@@ -18,20 +19,23 @@ func NewAuthHandler(AuthUseCase *auth_usecase.AuthUseCase) *AuthHandler {
 	}
 }
 
-func (ah *AuthHandler) LoginUser(c echo.Context) error {
-	payload, ok := c.Get("payload").(*auth_usecase.LoginUserDTO)
-	if !ok {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Missing properties email or password."})
+func (ah *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	var input auth_usecase.LoginUserDTO
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	authorized, err := ah.AuthUseCase.LoginUser(auth_usecase.LoginUserDTO{
-		Email:    payload.Email,
-		Password: payload.Password,
+		Email:    input.Email,
+		Password: input.Password,
 	})
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 	if authorized {
-		token := ah.JwtAdapter.Generate(&payload.Email)
+		token := ah.JwtAdapter.Generate(&input.Email)
 
 		cookie := new(http.Cookie)
 		cookie.Name = "UPTIME_GUARDIAN_HTTP"
@@ -40,10 +44,9 @@ func (ah *AuthHandler) LoginUser(c echo.Context) error {
 
 		// possivelmente pode falhar por causa disso
 		cookie.Secure = true
-
-		c.SetCookie(cookie)
-		return c.JSON(http.StatusOK, map[string]string{"message": "Logged successfully!"})
+		http.SetCookie(w, cookie)
+		w.WriteHeader(http.StatusAccepted)
+		return
 	}
-
-	return c.JSON(http.StatusOK, map[string]string{"error": "Invalid email or password"})
+	w.WriteHeader(http.StatusUnauthorized)
 }

@@ -2,8 +2,8 @@ package handler
 
 import (
 	"net/http"
+
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	"github.com/labstack/echo/v4"
 )
 
 type DeleteHostHandler struct {
@@ -16,13 +16,20 @@ func NewDeleteHostHandler(DeleteHostUseCase *host_usecase.DeleteHostUseCase) *De
 	}
 }
 
-func (uc *DeleteHostHandler) Execute(c echo.Context) error {
-	id := c.Param("id")
+func (uc *DeleteHostHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return 
+	}
+	id := r.PathValue("id")
 	if id == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "The 'id' request path value is required"})
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	if err := uc.DeleteHostUseCase.Execute(id); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete Host"})
+	err := uc.DeleteHostUseCase.Execute(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]string{"message": "Host deleted successfully!"})
+	w.WriteHeader(http.StatusOK)
 }

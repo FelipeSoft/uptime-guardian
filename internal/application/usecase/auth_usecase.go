@@ -11,8 +11,8 @@ type AuthUseCase struct {
 }
 
 type LoginUserDTO struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email"    validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 func NewAuthUseCase(repo domain.UserRepository) *AuthUseCase {

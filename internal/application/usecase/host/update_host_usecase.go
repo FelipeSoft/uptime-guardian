@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 	"strconv"
 )
@@ -10,9 +11,9 @@ type UpdateHostUseCase struct {
 }
 
 type UpdateHostDTO struct {
-	IPAddress string `json:"ipAddress"`
-	Interval  int64  `json:"interval"  validate:"required"`
-	Timeout   int64  `json:"timeout"   validate:"required"`
+	IPAddress *string `json:"ipAddress"`
+	Interval  *int64  `json:"interval"`
+	Timeout   *int64  `json:"timeout"`
 }
 
 func NewUpdateHostUseCase(repo domain.HostRepository) *UpdateHostUseCase {
@@ -28,16 +29,36 @@ func (uc *UpdateHostUseCase) Execute(id string, dto UpdateHostDTO) error {
 		return err
 	}
 
-	u := &domain.Host{
-		ID:        uint64(parsedId),
-		IPAddress: dto.IPAddress,
-		Interval:  dto.Interval,
-		Timeout:   dto.Timeout,
+	found, err := uc.repo.GetById(uint64(parsedId))
+	if err != nil {
+		return err
 	}
-
+	if found == nil {
+		return errors.New("host not found")
+	}
+	u := &domain.Host{
+		ID:        found.ID,
+		IPAddress: chooseString(dto.IPAddress, found.IPAddress),
+		Interval:  chooseInt64(dto.Interval, found.Interval),
+		Timeout:   chooseInt64(dto.Timeout, found.Timeout),
+	}
 	err = uc.repo.Update(u)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func chooseString(newValue *string, existingValue string) string {
+	if newValue != nil {
+		return *newValue
+	}
+	return existingValue
+}
+
+func chooseInt64(newValue *int64, existingValue int64) int64 {
+	if newValue != nil {
+		return *newValue
+	}
+	return existingValue
 }

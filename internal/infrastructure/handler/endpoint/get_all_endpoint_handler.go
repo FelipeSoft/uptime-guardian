@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	"github.com/labstack/echo/v4"
 )
 
 type GetAllEndpointHandler struct {
@@ -17,11 +16,18 @@ func NewGetAllEndpointHandler(GetAllEndpointUsecase *endpoint_usecase.GetAllEndp
 	}
 }
 
-func (uc *GetAllEndpointHandler) Execute(c echo.Context) error {
-	res, err := uc.GetAllEndpointUsecase.Execute()
-	if err != nil {
-		fmt.Println(err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed on getting endpoints"})
+func (uc *GetAllEndpointHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
-	return c.JSON(http.StatusOK, res)
+
+	output, err := uc.GetAllEndpointUsecase.Execute()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(output)
 }

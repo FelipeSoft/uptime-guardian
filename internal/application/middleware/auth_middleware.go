@@ -1,8 +1,9 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
+	// "net/http"
 	"slices"
 	"time"
 
@@ -21,11 +22,13 @@ func VerifyUserAuthentication(c echo.Context) error {
 	authCookie, err := c.Cookie("UPTIME_GUARDIAN_HTTP")
 
 	if err != nil {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+		return errors.New("Unauthorized")
+		// return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 	}
 
 	if authCookie.Expires.Before(time.Now()) {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Session expired"})
+		return errors.New("Session expired")
+		// return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Session expired"})
 	}
 
 	fmt.Println(authCookie)

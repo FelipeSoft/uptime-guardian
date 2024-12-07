@@ -51,7 +51,7 @@ func (r *HostRepositoryMySQL) GetById(id uint64) (*domain.Host, error) {
 }
 
 func (r *HostRepositoryMySQL) Create(host *domain.Host) error {
-	rows, err := r.db.Query("INSERT INTO host (`ip_address`, `interval`, `timeout`, `created_at`) VALUES (?,?,?,?)",
+	rows, err := r.db.Query("INSERT INTO host (`ip_address`, `interval`, `timeout`, `created_at`) VALUES (?,?,?,?,?)",
 	host.IPAddress, host.Interval, host.Timeout, time.Now())
 
 	if err != nil {

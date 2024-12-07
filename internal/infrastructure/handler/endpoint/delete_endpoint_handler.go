@@ -2,8 +2,8 @@ package handler
 
 import (
 	"net/http"
+
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	"github.com/labstack/echo/v4"
 )
 
 type DeleteEndpointHandler struct {
@@ -16,13 +16,22 @@ func NewDeleteEndpointHandler(DeleteEndpointUseCase *endpoint_usecase.DeleteEndp
 	}
 }
 
-func (uc *DeleteEndpointHandler) Execute(c echo.Context) error {
-	id := c.Param("id")
+func (uc *DeleteEndpointHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.PathValue("id")
 	if id == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "The 'id' request path value is required"})
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+
 	if err := uc.DeleteEndpointUseCase.Execute(id); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to delete endpoint"})
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]string{"message": "Endpoint deleted successfully!"})
+
+	w.WriteHeader(http.StatusOK)
 }

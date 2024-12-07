@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	"github.com/labstack/echo/v4"
 )
 
 type UpdateEndpointHandler struct {
@@ -16,17 +17,31 @@ func NewUpdateEndpointHandler(UpdateEndpointUseCase *endpoint_usecase.UpdateEndp
 	}
 }
 
-func (uc *UpdateEndpointHandler) Execute(c echo.Context) error {
-	id := c.Param("id")
+func (uc *UpdateEndpointHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.PathValue("id")
 	if id == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "The 'id' request path value is required"})
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	payload, ok := c.Get("payload").(*endpoint_usecase.UpdateEndpointDTO)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Payload not found"})
+
+	var input endpoint_usecase.UpdateEndpointDTO
+	err := json.NewDecoder(r.Body).Decode(&input)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	if err := uc.UpdateEndpointUseCase.Execute(id, *payload); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update endpoint"})
+
+	err = uc.UpdateEndpointUseCase.Execute(id, input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]string{"message": "Endpoint updated successfully!"})
+
+	w.WriteHeader(http.StatusOK)
 }

@@ -11,8 +11,8 @@ type CreateHostUseCase struct {
 
 type CreateHostDTO struct {
 	IPAddress string `json:"ipAddress"`
-	Interval  int64  `json:"interval"  validate:"required"`
-	Timeout   int64  `json:"timeout"   validate:"required"`
+	Interval  int64  `json:"interval"`
+	Timeout   int64  `json:"timeout"`
 }
 
 func NewCreateHostUseCase(repo domain.HostRepository) *CreateHostUseCase {
@@ -22,7 +22,7 @@ func NewCreateHostUseCase(repo domain.HostRepository) *CreateHostUseCase {
 }
 
 func (uc *CreateHostUseCase) Execute(dto CreateHostDTO) error {
-	if dto.IPAddress == "" && dto.IPAddress == "" {
+	if dto.IPAddress == "" {
 		return errors.New("at least IP address or URL should be provided")
 	}
 	u := &domain.Host{

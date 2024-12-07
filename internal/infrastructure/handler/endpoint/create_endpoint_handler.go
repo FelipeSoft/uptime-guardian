@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	"github.com/labstack/echo/v4"
 )
 
 type CreateEndpointHandler struct {
@@ -16,15 +17,26 @@ func NewCreateEndpointHandler(CreateEndpointUseCase *endpoint_usecase.CreateEndp
 	}
 }
 
-func (uc *CreateEndpointHandler) Execute(c echo.Context) error {
-	payload, ok := c.Get("payload").(*endpoint_usecase.CreateEndpointDTO)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Payload not found"})
+func (uc *CreateEndpointHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 
-	if err := uc.CreateEndpointUseCase.Execute(*payload); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create endpoint"})
+	var input endpoint_usecase.CreateEndpointDTO
+	err := json.NewDecoder(r.Body).Decode(&input)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	return c.JSON(http.StatusCreated, map[string]string{"message": "Endpoint created successfully!"})
+	err = uc.CreateEndpointUseCase.Execute(input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 }

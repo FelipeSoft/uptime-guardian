@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	"github.com/labstack/echo/v4"
 )
 
 type GetAllHostHandler struct {
@@ -17,11 +16,17 @@ func NewGetAllHostHandler(GetAllHostUsecase *host_usecase.GetAllHostUseCase) *Ge
 	}
 }
 
-func (uc *GetAllHostHandler) Execute(c echo.Context) error {
-	res, err := uc.GetAllHostUsecase.Execute()
-	if err != nil {
-		fmt.Println(err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed on getting Hosts"})
+func (uc *GetAllHostHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
-	return c.JSON(http.StatusOK, res)
+	output, err := uc.GetAllHostUsecase.Execute()
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(output)
 }

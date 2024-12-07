@@ -2,19 +2,19 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
-	"github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
-	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
-	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
+	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
+	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler"
+	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
+	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
@@ -22,8 +22,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Environment Variable Error: %s", err.Error())
 	}
+	
+	r := http.NewServeMux()
+	httpServer := os.Getenv("HTTP_SERVER")
 
-	e := echo.New()
 	db, err := sql.Open("mysql", os.Getenv("MYSQL_URL"))
 	if err != nil {
 		log.Fatalf("MySQL Connection Error: %s", err.Error())
@@ -65,38 +67,39 @@ func main() {
 	deleteHostHandler := host_handler.NewDeleteHostHandler(deleteHostUseCase)
 
 	// Middlewares
-	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if err := middleware.ValidateRequestBodyDynamic(c); err != nil {
-				return err
-			}
-			return next(c)
-		}
-	})
+	// e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+	// 	return func(c echo.Context) error {
+	// 		if err := middleware.ValidateRequestBodyDynamic(c); err != nil {
+	// 			return err
+	// 		}
+	// 		return next(c)
+	// 	}
+	// })
 
-	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if err := middleware.VerifyUserAuthentication(c); err != nil {
-				return err
-			}
-			return next(c)
-		}
-	})
+	// e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+	// 	return func(c echo.Context) error {
+	// 		if err := middleware.VerifyUserAuthentication(c); err != nil {
+	// 			return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
+	// 		}
+	// 		return next(c)
+	// 	}
+	// })
 
 	// Routes
-	e.POST("/auth/login", authHandler.LoginUser)
+	r.HandleFunc("/auth/login", authHandler.LoginUser)
 
-	e.POST("/endpoint", createEndpointHandler.Execute)
-	e.PUT("/endpoint/:id", updateEndpointHandler.Execute)
-	e.DELETE("/endpoint/:id", deleteEndpointHandler.Execute)
-	e.GET("/endpoint", getAllEndpointHandler.Execute)
-	e.GET("/endpoint/:id", getByIdEndpointHandler.Execute)
+	r.HandleFunc("/endpoint/create", createEndpointHandler.Execute)
+	r.HandleFunc("/endpoint/update/{id}", updateEndpointHandler.Execute)
+	r.HandleFunc("/endpoint/delete/{id}", deleteEndpointHandler.Execute)
+	r.HandleFunc("/endpoint", getAllEndpointHandler.Execute)
+	r.HandleFunc("/endpoint/{id}", getByIdEndpointHandler.Execute)
 
-	e.POST("/host", createHostHandler.Execute)
-	e.PUT("/host/:id", updateHostHandler.Execute)
-	e.DELETE("/host/:id", deleteHostHandler.Execute)
-	e.GET("/host", getAllHostHandler.Execute)
-	e.GET("/host/:id", getByIdHostHandler.Execute)
+	r.HandleFunc("/host/create", createHostHandler.Execute)
+	r.HandleFunc("/host/update/{id}", updateHostHandler.Execute)
+	r.HandleFunc("/host/delete/{id}", deleteHostHandler.Execute)
+	r.HandleFunc("/host", getAllHostHandler.Execute)
+	r.HandleFunc("/host/{id}", getByIdHostHandler.Execute)
 
-	e.Logger.Fatal(e.Start(os.Getenv("HTTP_SERVER")))
+	fmt.Printf("HTTP Server listening on %s", httpServer)
+	http.ListenAndServe(httpServer, r)
 }

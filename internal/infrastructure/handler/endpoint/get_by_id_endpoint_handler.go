@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
-	"github.com/labstack/echo/v4"
 )
 
 type GetByIdEndpointHandler struct {
@@ -16,17 +17,25 @@ func NewGetByIdEndpointHandler(GetByIdEndpointUsecase *endpoint_usecase.GetByIdE
 	}
 }
 
-func (uc *GetByIdEndpointHandler) Execute(c echo.Context) error {
-	id := c.Param("id")
+func (uc *GetByIdEndpointHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.PathValue("id")
 	if id == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "The 'id' request path value is required"})
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	res, err := uc.GetByIdEndpointUsecase.Execute(id)
+
+	output, err := uc.GetByIdEndpointUsecase.Execute(id)
 	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
-			return c.JSON(http.StatusNotFound, map[string]string{"error": "Not found"})
-		}
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed on getting endpoints"})
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
-	return c.JSON(http.StatusOK, res)
+	
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(output)
 }

@@ -1,9 +1,10 @@
 package handler
 
 import (
-	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	"github.com/labstack/echo/v4"
+	"encoding/json"
 	"net/http"
+
+	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 )
 
 type UpdateHostHandler struct {
@@ -16,17 +17,26 @@ func NewUpdateHostHandler(UpdateHostUseCase *host_usecase.UpdateHostUseCase) *Up
 	}
 }
 
-func (uc *UpdateHostHandler) Execute(c echo.Context) error {
-	id := c.Param("id")
+func (uc *UpdateHostHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	id := r.PathValue("id")
 	if id == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "The 'id' request path value is required"})
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	payload, ok := c.Get("payload").(*host_usecase.UpdateHostDTO)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Payload not found"})
+	var input host_usecase.UpdateHostDTO
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	if err := uc.UpdateHostUseCase.Execute(id, *payload); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update Host"})
+	err = uc.UpdateHostUseCase.Execute(id, input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	return c.JSON(http.StatusOK, map[string]string{"message": "Host updated successfully!"})
+	w.WriteHeader(http.StatusOK)
 }

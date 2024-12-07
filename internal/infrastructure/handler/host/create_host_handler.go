@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	"github.com/labstack/echo/v4"
 )
 
 type CreateHostHandler struct {
@@ -16,15 +17,22 @@ func NewCreateHostHandler(CreateHostUseCase *host_usecase.CreateHostUseCase) *Cr
 	}
 }
 
-func (uc *CreateHostHandler) Execute(c echo.Context) error {
-	payload, ok := c.Get("payload").(*host_usecase.CreateHostDTO)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Payload not found"})
+func (uc *CreateHostHandler) Execute(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
-
-	if err := uc.CreateHostUseCase.Execute(*payload); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create Host"})
+	var input host_usecase.CreateHostDTO
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return 
 	}
-
-	return c.JSON(http.StatusCreated, map[string]string{"message": "Host created successfully!"})
+	err = uc.CreateHostUseCase.Execute(input)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }

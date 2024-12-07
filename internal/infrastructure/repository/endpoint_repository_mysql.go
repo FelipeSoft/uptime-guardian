@@ -51,7 +51,7 @@ func (r *EndpointRepositoryMySQL) GetById(id uint64) (*domain.Endpoint, error) {
 }
 
 func (r *EndpointRepositoryMySQL) Create(endpoint *domain.Endpoint) error {
-	rows, err := r.db.Query("INSERT INTO endpoint (`url`, `method`, `interval`, `timeout`, `created_at`) VALUES (?,?,?,?)",
+	rows, err := r.db.Query("INSERT INTO endpoint (`url`, `method`, `interval`, `timeout`, `created_at`) VALUES (?,?,?,?,?)",
 	endpoint.URL, endpoint.Method, endpoint.Interval, endpoint.Timeout, time.Now())
 
 	if err != nil {

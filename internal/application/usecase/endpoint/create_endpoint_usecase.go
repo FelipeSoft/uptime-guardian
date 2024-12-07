@@ -9,10 +9,10 @@ type CreateEndpointUseCase struct {
 }
 
 type CreateEndpointDTO struct {
-	URL      string `json:"url"       validate:"required"`
-	Method   string `json:"method"    validate:"required"`
-	Interval int64  `json:"interval"  validate:"required"`
-	Timeout  int64  `json:"timeout"   validate:"required"`
+	URL      string `json:"url"`
+	Method   string `json:"method"`
+	Interval int64  `json:"interval"`
+	Timeout  int64  `json:"timeout"`
 }
 
 func NewCreateEndpointUseCase(repo domain.EndpointRepository) *CreateEndpointUseCase {
