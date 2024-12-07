@@ -23,6 +23,10 @@ func NewAuthHandler(AuthUseCase *auth_usecase.AuthUseCase, JwtAdapter domain.Jwt
 }
 
 func (ah *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	var input auth_usecase.LoginUserDTO
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
