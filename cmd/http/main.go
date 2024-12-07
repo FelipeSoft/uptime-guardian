@@ -6,17 +6,17 @@ import (
 	"log"
 	"net/http"
 	"os"
-
+    "github.com/rs/cors"
 	middleware "github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/adapter"
 	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler"
 	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
 	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
-	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/adapter"
 	"github.com/joho/godotenv"
 )
 
@@ -75,6 +75,10 @@ func main() {
 
 	// Middlewares
 	authMiddleware := middleware.NewAuthMiddleware(jwtAdapter)
+	handler := cors.New(cors.Options{
+		// AllowedOrigins: []string{"http://localhost:3000"},
+		AllowedOrigins: []string{"*"},
+	}).Handler(r)
 
 	// Routes
 	r.HandleFunc("/auth/login", middleware.Limit(authHandler.LoginUser))
@@ -93,5 +97,5 @@ func main() {
 	r.HandleFunc("/host/{id}", getByIdHostHandler.Execute)
 
 	fmt.Printf("HTTP Server listening on %s", httpServer)
-	http.ListenAndServe(httpServer, r)
+	http.ListenAndServe(httpServer, handler)
 }

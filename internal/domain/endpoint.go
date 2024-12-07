@@ -1,5 +1,7 @@
 package domain
 
+import "errors"
+
 type Endpoint struct {
 	ID        uint64
 	URL       string
@@ -7,6 +9,23 @@ type Endpoint struct {
 	Interval  int64
 	Timeout   int64
 	CreatedAt string
+}
+
+func NewEndpoint(ID uint64, URL string, Method string, Interval int64, Timeout int64, CreatedAt string) (*Endpoint, error) {
+	if Timeout <= 0 {
+		return nil, errors.New("timeout should be greater than 0 seconds")
+	}
+	if Interval < 10 {
+		return nil, errors.New("interval should be greater than 10 seconds")
+	}
+	return &Endpoint{
+		ID:        ID,
+		URL:       URL,
+		Method:    Method,
+		Interval:  Interval,
+		Timeout:   Timeout,
+		CreatedAt: CreatedAt,
+	}, nil
 }
 
 type EndpointRepository interface {

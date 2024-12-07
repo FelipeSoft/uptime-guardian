@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
@@ -24,7 +22,7 @@ func (m *AuthMiddleware) RequireAuthentication(next func(w http.ResponseWriter, 
 			next(w, r)
 			return
 		}
-		fmt.Println(r.Cookies())
+		r.Cookies()
 		if err != nil || cookie == nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
