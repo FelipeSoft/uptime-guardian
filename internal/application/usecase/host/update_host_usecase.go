@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"errors"
-	"github.com/FelipeSoft/uptime-guardian/internal/domain"
+	"fmt"
 	"strconv"
+
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
 type UpdateHostUseCase struct {
@@ -11,7 +13,7 @@ type UpdateHostUseCase struct {
 }
 
 type UpdateHostDTO struct {
-	IPAddress *string `json:"ipAddress"`
+	IPAddress *string `json:"ip_address"`
 	Interval  *int64  `json:"interval"`
 	Timeout   *int64  `json:"timeout"`
 }
@@ -33,19 +35,25 @@ func (uc *UpdateHostUseCase) Execute(id string, dto UpdateHostDTO) error {
 	if err != nil {
 		return err
 	}
+
 	if found == nil {
 		return errors.New("host not found")
 	}
+
 	u := &domain.Host{
 		ID:        found.ID,
 		IPAddress: chooseString(dto.IPAddress, found.IPAddress),
 		Interval:  chooseInt64(dto.Interval, found.Interval),
 		Timeout:   chooseInt64(dto.Timeout, found.Timeout),
 	}
+	
+	fmt.Println(u)
 	err = uc.repo.Update(u)
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

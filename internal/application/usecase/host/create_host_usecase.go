@@ -10,7 +10,7 @@ type CreateHostUseCase struct {
 }
 
 type CreateHostDTO struct {
-	IPAddress string `json:"ipAddress"`
+	IPAddress string `json:"ip_address"`
 	Interval  int64  `json:"interval"`
 	Timeout   int64  `json:"timeout"`
 }

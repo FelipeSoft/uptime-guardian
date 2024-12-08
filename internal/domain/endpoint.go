@@ -9,9 +9,10 @@ type Endpoint struct {
 	Interval  int64
 	Timeout   int64
 	CreatedAt string
+	UpdatedAt string
 }
 
-func NewEndpoint(ID uint64, URL string, Method string, Interval int64, Timeout int64, CreatedAt string) (*Endpoint, error) {
+func NewEndpoint(ID uint64, URL string, Method string, Interval int64, Timeout int64, CreatedAt string, UpdatedAt string) (*Endpoint, error) {
 	if Timeout <= 0 {
 		return nil, errors.New("timeout should be greater than 0 seconds")
 	}
@@ -25,6 +26,7 @@ func NewEndpoint(ID uint64, URL string, Method string, Interval int64, Timeout i
 		Interval:  Interval,
 		Timeout:   Timeout,
 		CreatedAt: CreatedAt,
+		UpdatedAt: UpdatedAt,
 	}, nil
 }
 

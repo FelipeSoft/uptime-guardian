@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
@@ -26,10 +27,11 @@ func (uc *CreateHostHandler) Execute(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		return 
+		return
 	}
 	err = uc.CreateHostUseCase.Execute(input)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
