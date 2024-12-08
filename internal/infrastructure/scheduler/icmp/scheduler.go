@@ -2,10 +2,10 @@ package icmp
 
 import (
 	"context"
+	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 	"log"
 	"sync"
 	"time"
-	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
 var (
