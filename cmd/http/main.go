@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	middleware "github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
@@ -14,9 +15,11 @@ import (
 	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler"
 	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
 	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/rabbitmq"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron"
 	"github.com/rs/cors"
 )
 
@@ -33,6 +36,33 @@ func main() {
 	if err != nil {
 		log.Fatalf("MySQL Connection Error: %s", err.Error())
 	}
+
+	queue, err := rabbitmq.NewRabbitMQ(os.Getenv("RABBITMQ_URL"))
+	if err != nil {
+		log.Fatalf("RabbitMQ Connection Error: %s", err.Error())
+	}
+
+	cron := cron.New()
+	defer cron.Stop()
+
+	cron.AddFunc("@every 10s", func() {
+		queue.Publish("icmp", []byte("testing..."))
+	})
+	if err != nil {
+		log.Fatalf("Cron Error: %s", err.Error())
+	}
+
+	cron.Start()
+
+	ch, err := queue.Consume("icmp")
+	if err != nil {
+		log.Fatalf("Error on consuming icmp queue: %s", err.Error())
+	}
+	go func() {
+		for m := range ch {
+			fmt.Println(string(m.Body))
+		}
+	}()
 
 	bcryptHashAdapter := adapter.NewBcryptHashAdapter()
 	jwtAdapter := adapter.NewJwtAdapter()

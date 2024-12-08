@@ -33,6 +33,14 @@ func (r *RabbitMQ) Publish(queueName string, body []byte) error {
 		})
 }
 
+func (r *RabbitMQ) Consume(queueName string) (<-chan amqp.Delivery, error) {
+	msgs, err := r.ch.Consume(queueName, "", true, false, false, false, nil)
+	if err != nil {
+		return nil, err
+	}
+	return msgs, nil
+}
+
 func (r *RabbitMQ) Close() {
 	r.conn.Close()
 	r.ch.Close()
