@@ -2,7 +2,6 @@ package icmp
 
 import (
 	"context"
-	// "fmt"
 	"log"
 	"os/exec"
 	// "log"
@@ -16,7 +15,7 @@ func TestByICMP(ctx context.Context, ip string) {
 		log.Printf("Fail on ping %s; [Error] %s", ip, err.Error())
 		return
 	}
-	log.Printf("%s is up!!!", ip)	
+	log.Printf("%s is up!!!", ip)
 	// client := &http.Client{}
 	// req, err := http.NewRequestWithContext(ctx, "GET", "http://"+ip, nil)
 	// if err != nil {
