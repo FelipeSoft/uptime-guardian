@@ -68,6 +68,13 @@ func (ht *HostTask) executeTask() {
 	TestByICMP(ctx, ht.Host.IPAddress)
 }
 
+func hostsEqual(a, b *domain.Host) bool {
+	return a.ID == b.ID &&
+		a.IPAddress == b.IPAddress &&
+		a.Interval == b.Interval &&
+		a.Timeout == b.Timeout
+}
+
 func UpdateHostTask(hosts []*domain.Host, ctx context.Context) {
 	TaskMutex.Lock()
 	defer TaskMutex.Unlock()
@@ -85,7 +92,7 @@ func UpdateHostTask(hosts []*domain.Host, ctx context.Context) {
 		} else {
 			currentHostIDs[host.ID] = false
 			existingHT := HostTaskRegistry[host.ID]
-			if existingHT.Host.Interval != host.Interval || existingHT.Host.Timeout != host.Timeout {
+			if !hostsEqual(existingHT.Host, host) {
 				existingHT.Stop()
 				newHT := NewHostTask(host, ctx)
 				HostTaskRegistry[host.ID] = newHT
@@ -128,4 +135,5 @@ func GracefulShutdown(ctx context.Context) {
 	for _, ht := range HostTaskRegistry {
 		ht.Stop()
 	}
+	TaskWaitGroup.Wait()
 }
