@@ -1,0 +1,2 @@
+🟢 ICMP testing by mutex and parallel tasks (scheduler for tasks independence, and update list os tasks)
+🔴 Implement method to recognize when a host is down (by period column on hosts table)
