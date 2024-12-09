@@ -14,6 +14,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+	github.com/raintank/go-pinger v0.0.0-20191223222655-ec2d6f963bab // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	golang.org/x/sync v0.10.0 // indirect

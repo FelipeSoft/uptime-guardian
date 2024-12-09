@@ -2,9 +2,7 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
@@ -46,8 +44,7 @@ func (uc *UpdateHostUseCase) Execute(id string, dto UpdateHostDTO) error {
 		Interval:  chooseInt64(dto.Interval, found.Interval),
 		Timeout:   chooseInt64(dto.Timeout, found.Timeout),
 	}
-	
-	fmt.Println(u)
+
 	err = uc.repo.Update(u)
 
 	if err != nil {

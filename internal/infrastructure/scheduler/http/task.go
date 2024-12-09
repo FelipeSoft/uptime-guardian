@@ -1,4 +1,4 @@
-package worker
+package http
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 )
 
 type HttpStatistics struct {
-	StatusCode   int64  `json:"statusCode"`
+	StatusCode   int64  `json:"status_code"`
 	Method       string `json:"method"`
 	Milliseconds int64  `json:"milliseconds"`
 }

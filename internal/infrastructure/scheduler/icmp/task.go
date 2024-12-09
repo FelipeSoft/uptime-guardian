@@ -3,30 +3,27 @@ package icmp
 import (
 	"context"
 	"log"
-	"os/exec"
-	// "log"
-	// "net/http"
+	"time"
+	"github.com/go-ping/ping"
 )
- 
+
 func TestByICMP(ctx context.Context, ip string) {
-	cmd := exec.CommandContext(ctx, "ping", ip)
-	err := cmd.Run()
+	pinger, err := ping.NewPinger(ip)
+	if err != nil {
+		log.Printf("Error creating pinger for %s: %v", ip, err)
+		return
+	}
+
+	pinger.Count = 1
+	pinger.Timeout = time.Second
+	pinger.SetPrivileged(true)
+
+	err = pinger.Run()
 	if err != nil {
 		log.Printf("Fail on ping %s; [Error] %s", ip, err.Error())
 		return
 	}
-	log.Printf("%s is up!!!", ip)
-	// client := &http.Client{}
-	// req, err := http.NewRequestWithContext(ctx, "GET", "http://"+ip, nil)
-	// if err != nil {
-	// 	log.Printf("Fail on req %s is down; [Error] %s", ip, err.Error())
-	// 	return
-	// }
-	// res, err := client.Do(req)
-	// if err != nil {
-	// 	log.Printf("Fail on res %s is down; [Error] %s", ip, err.Error())
-	// 	return
-	// }
-	// defer res.Body.Close()
-	// log.Printf("IP %s is up!!!", ip)
+
+	stats := pinger.Statistics()
+	log.Printf("%s Sent = %d, Received = %d, Lost = %d, Latency = %v", ip, stats.PacketsSent, stats.PacketsRecv, stats.PacketsSent-stats.PacketsRecv, stats.AvgRtt)
 }

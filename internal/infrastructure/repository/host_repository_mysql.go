@@ -2,9 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/domain"
 )
 
@@ -67,9 +65,6 @@ func (r *HostRepositoryMySQL) Create(host *domain.Host) error {
 func (r *HostRepositoryMySQL) Update(host *domain.Host) error {
 	rows, err := r.db.Query("UPDATE host SET `ip_address`= ?, `interval`= ?, `timeout` = ?, `updated_at` = ? WHERE id = ?",
 	host.IPAddress, host.Interval, host.Timeout, time.Now(), host.ID)
-
-	fmt.Println("Received HOST:")
-	fmt.Println(host)
 
 	if err != nil {
 		return err
