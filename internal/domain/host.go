@@ -7,11 +7,12 @@ type Host struct {
 	IPAddress string
 	Interval  int64
 	Timeout   int64
+	Period    int64
 	CreatedAt string
 	UpdatedAt string
 }
 
-func NewHost(ID uint64, IPAddress string, Interval int64, Timeout int64, CreatedAt string, UpdatedAt string) (*Host, error) {
+func NewHost(ID uint64, IPAddress string, Interval int64, Timeout int64, Period int64, CreatedAt string, UpdatedAt string) (*Host, error) {
 	if Timeout <= 0 {
 		return nil, errors.New("timeout should be greater than 0 seconds")
 	}
@@ -25,6 +26,7 @@ func NewHost(ID uint64, IPAddress string, Interval int64, Timeout int64, Created
 		CreatedAt: CreatedAt,
 		UpdatedAt: UpdatedAt,
 		Timeout:   Timeout,
+		Period:    Period,
 	}, nil
 }
 

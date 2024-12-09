@@ -17,7 +17,7 @@ func NewHostRepositoryMySQL(db *sql.DB) *HostRepositoryMySQL {
 }
 
 func (r *HostRepositoryMySQL) GetAll() ([]*domain.Host, error) {
-	rows, err := r.db.Query("SELECT `id`, `ip_address`, `interval`, `timeout`, `created_at` FROM host")
+	rows, err := r.db.Query("SELECT `id`, `ip_address`, `interval`, `timeout`, `period`, `created_at` FROM host")
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (r *HostRepositoryMySQL) GetAll() ([]*domain.Host, error) {
 
 	for rows.Next() {
 		var e domain.Host
-		err = rows.Scan(&e.ID, &e.IPAddress, &e.Interval, &e.Timeout, &e.CreatedAt)
+		err = rows.Scan(&e.ID, &e.IPAddress, &e.Interval, &e.Timeout, &e.Period, &e.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -38,10 +38,10 @@ func (r *HostRepositoryMySQL) GetAll() ([]*domain.Host, error) {
 }
 
 func (r *HostRepositoryMySQL) GetById(id uint64) (*domain.Host, error) {
-	row := r.db.QueryRow("SELECT `id`, `ip_address`, `interval`, `timeout`, `created_at` FROM host WHERE id = ?", id)
+	row := r.db.QueryRow("SELECT `id`, `ip_address`, `interval`, `timeout`, `period`, `created_at` FROM host WHERE id = ?", id)
 	
 	var e domain.Host
-	err := row.Scan(&e.ID, &e.IPAddress, &e.Interval, &e.Timeout, &e.CreatedAt)
+	err := row.Scan(&e.ID, &e.IPAddress, &e.Interval, &e.Timeout, &e.Period, &e.CreatedAt)
 
 	if err != nil {
 		return nil, err
@@ -51,8 +51,8 @@ func (r *HostRepositoryMySQL) GetById(id uint64) (*domain.Host, error) {
 }
 
 func (r *HostRepositoryMySQL) Create(host *domain.Host) error {
-	rows, err := r.db.Query("INSERT INTO host (`ip_address`, `interval`, `timeout`, `created_at`, `updated_at`) VALUES (?,?,?,?,?)",
-	host.IPAddress, host.Interval, host.Timeout, time.Now(), time.Now())
+	rows, err := r.db.Query("INSERT INTO host (`ip_address`, `interval`, `timeout`, `period`, `created_at`, `updated_at`) VALUES (?,?,?,?,?,?)",
+	host.IPAddress, host.Interval, host.Timeout, host.Period, time.Now(), time.Now())
 
 	if err != nil {
 		return err
@@ -63,8 +63,8 @@ func (r *HostRepositoryMySQL) Create(host *domain.Host) error {
 }
 
 func (r *HostRepositoryMySQL) Update(host *domain.Host) error {
-	rows, err := r.db.Query("UPDATE host SET `ip_address`= ?, `interval`= ?, `timeout` = ?, `updated_at` = ? WHERE id = ?",
-	host.IPAddress, host.Interval, host.Timeout, time.Now(), host.ID)
+	rows, err := r.db.Query("UPDATE host SET `ip_address`= ?, `interval`= ?, `timeout` = ?, `period`= ?, `updated_at` = ? WHERE id = ?",
+	host.IPAddress, host.Interval, host.Timeout, host.Period, time.Now(), host.ID)
 
 	if err != nil {
 		return err
