@@ -3,20 +3,21 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/FelipeSoft/uptime-guardian/internal/application/adapter"
 	middleware "github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
 	endpoint_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/endpoint"
 	host_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
-	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler"
-	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/endpoint"
-	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/handler/host"
+	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler"
+	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler/endpoint"
+	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler/host"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"log"
-	"net/http"
-	"os"
 	"github.com/rs/cors"
 )
 
@@ -83,7 +84,7 @@ func main() {
 	r.HandleFunc("/host", getAllHostHandler.Execute)
 	r.HandleFunc("/host/{id}", getByIdHostHandler.Execute)
 
-	fmt.Printf("HTTP Server listening on %s", httpServer)
+	fmt.Printf("HTTP Server started on %s", httpServer)
 	go http.ListenAndServe(httpServer, handler)
 
 	select {}

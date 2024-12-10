@@ -28,12 +28,25 @@ func (r *RabbitMQ) Publish(queueName string, body []byte) error {
 		false, // mandatory
 		false, // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        body,
+			ContentType:  "text/plain",
+			Body:         body,
+			DeliveryMode: amqp.Persistent,
 		})
 }
 
-func (r *RabbitMQ) Consume(queueName string) (<-chan amqp.Delivery, error) {
+func (r *RabbitMQ) DeclareQueue(queueName string, args amqp.Table) (amqp.Queue, error) {
+	queue, err := r.ch.QueueDeclare(
+		queueName,
+		true, 
+		false,
+		false,
+		false,
+		args,
+	)
+	return queue, err
+}
+
+func (r *RabbitMQ) Consume(queueName string, consumerName string) (<-chan amqp.Delivery, error) {
 	msgs, err := r.ch.Consume(queueName, "", true, false, false, false, nil)
 	if err != nil {
 		return nil, err

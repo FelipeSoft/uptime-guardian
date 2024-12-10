@@ -2,16 +2,28 @@ package icmp
 
 import (
 	"context"
-	"log"
+	ping "github.com/andrewsjg/pro-bing"
 	"time"
-	"github.com/go-ping/ping"
 )
 
-func TestByICMP(ctx context.Context, ip string) {
+type ICMPStatistics struct {
+	PacketsSent int
+	PacketsRecv int
+	AvgRtt      time.Duration
+	IP          string
+	Error       string
+}
+
+func TestByICMP(ctx context.Context, ip string) *ICMPStatistics {
 	pinger, err := ping.NewPinger(ip)
 	if err != nil {
-		log.Printf("Error creating pinger for %s: %v", ip, err)
-		return
+		return &ICMPStatistics{
+			IP:          ip,
+			PacketsSent: 0,
+			PacketsRecv: 0,
+			AvgRtt:      0,
+			Error:       err.Error(),
+		}
 	}
 
 	pinger.Count = 1
@@ -20,10 +32,19 @@ func TestByICMP(ctx context.Context, ip string) {
 
 	err = pinger.Run()
 	if err != nil {
-		log.Printf("Fail on ping %s; [Error] %s", ip, err.Error())
-		return
+		return &ICMPStatistics{
+			IP:          ip,
+			PacketsSent: 0,
+			PacketsRecv: 0,
+			AvgRtt:      0,
+			Error:       err.Error(),
+		}
 	}
 
 	stats := pinger.Statistics()
-	log.Printf("%s Sent = %d, Received = %d, Lost = %d, Latency = %v", ip, stats.PacketsSent, stats.PacketsRecv, stats.PacketsSent-stats.PacketsRecv, stats.AvgRtt)
+	return &ICMPStatistics{
+		IP:          ip,
+		PacketsSent: stats.PacketsSent,
+		PacketsRecv: stats.PacketsRecv,
+	}
 }
