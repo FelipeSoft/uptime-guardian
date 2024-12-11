@@ -38,6 +38,7 @@ func main() {
 	}
 	defer queue.Close()
 
+	// include queue channel here
 	http.Handle("/host/ws", enableCORS(websocket.Handler(handler.HostMetricsWebsocketHandler)))
 	hostMetricsConsumerUseCase := usecase.NewConsumeMetricsUseCase(queue, shared.GetWebsocketClients())
 

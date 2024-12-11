@@ -22,10 +22,12 @@ func NewConsumeMetricsUseCase(rabbitmq *rabbitmq.RabbitMQ, clients map[*websocke
 }
 
 func (c *ConsumeMetricsUseCase) ConsumeAvailableHostsMetrics() {
+	fmt.Println("Hello From Consumer")
 	msgs, err := c.rabbitmq.Consume("icmp_queue", "icmp_host_websocket_consumer")
 	if err != nil {
 		log.Printf("log this error: %s", err.Error())
 	}
+	fmt.Println(msgs)
 	for msg := range msgs {
 		for client := range c.clients {
 			byteMsg, err := json.Marshal(msg)
