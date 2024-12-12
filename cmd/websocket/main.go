@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"os"
 	usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/rabbitmq"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/shared"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/websocket/handler"
 	"github.com/joho/godotenv"
 	"golang.org/x/net/websocket"
-	"log"
-	"net/http"
-	"os"
 )
 
 func enableCORS(next http.Handler) http.Handler {
@@ -38,17 +38,16 @@ func main() {
 	}
 	defer queue.Close()
 
-	// include queue channel here
 	http.Handle("/host/ws", enableCORS(websocket.Handler(handler.HostMetricsWebsocketHandler)))
 	hostMetricsConsumerUseCase := usecase.NewConsumeMetricsUseCase(queue, shared.GetWebsocketClients())
 
-	go hostMetricsConsumerUseCase.ConsumeAvailableHostsMetrics()
+	go func() {
+		hostMetricsConsumerUseCase.ConsumeAvailableHostsMetrics()
+	}()
 
 	fmt.Printf("Websocket Server started on %s \n", os.Getenv("WEBSOCKET_URL"))
 	err = http.ListenAndServe(os.Getenv("WEBSOCKET_URL"), nil)
 	if err != nil {
 		log.Fatalf("Websocket Server initializing start error: %s", err.Error())
 	}
-	
-	select {}
 }

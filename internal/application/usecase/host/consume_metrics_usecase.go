@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/rabbitmq"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/shared"
 	"golang.org/x/net/websocket"
 )
 
@@ -22,13 +23,12 @@ func NewConsumeMetricsUseCase(rabbitmq *rabbitmq.RabbitMQ, clients map[*websocke
 }
 
 func (c *ConsumeMetricsUseCase) ConsumeAvailableHostsMetrics() {
-	fmt.Println("Hello From Consumer")
-	msgs, err := c.rabbitmq.Consume("icmp_queue", "icmp_host_websocket_consumer")
+	msgs, err := c.rabbitmq.Consume("icmp_queue")
 	if err != nil {
 		log.Printf("log this error: %s", err.Error())
 	}
-	fmt.Println(msgs)
 	for msg := range msgs {
+		shared.ProcessICMPMessage(msg)
 		for client := range c.clients {
 			byteMsg, err := json.Marshal(msg)
 			if err != nil {
@@ -37,6 +37,5 @@ func (c *ConsumeMetricsUseCase) ConsumeAvailableHostsMetrics() {
 			}
 			websocket.Message.Send(client, byteMsg)
 		}
-		msg.Ack(false)
 	}
 }

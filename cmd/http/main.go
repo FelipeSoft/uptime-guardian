@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-
 	"github.com/FelipeSoft/uptime-guardian/internal/application/adapter"
 	middleware "github.com/FelipeSoft/uptime-guardian/internal/application/middleware"
 	auth_usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase"
@@ -15,12 +14,13 @@ import (
 	auth_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler"
 	endpoint_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler/endpoint"
 	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler/host"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/rabbitmq"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
+	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/shared"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
-
 
 func main() {
 	err := godotenv.Load("../../.env")
@@ -35,6 +35,23 @@ func main() {
 	if err != nil {
 		log.Fatalf("MySQL Connection Error: %s", err.Error())
 	}
+
+	queue, err := rabbitmq.NewRabbitMQ(os.Getenv("RABBITMQ_URL"))
+	if err != nil {
+		log.Fatalf("RabbitMQ Connection Error: %s", err.Error())
+	}
+	defer queue.Close()
+
+	msgs, err := queue.Consume("icmp_queue")
+	if err != nil {
+		log.Printf("Error on message reading from the icmp_queue %s \n", err.Error())
+	}
+
+	go func() {
+		for msg := range msgs {
+			shared.ProcessICMPMessage(msg)
+		}
+	}()
 
 	bcryptHashAdapter := adapter.NewBcryptHashAdapter()
 	jwtAdapter := adapter.NewJwtAdapter()

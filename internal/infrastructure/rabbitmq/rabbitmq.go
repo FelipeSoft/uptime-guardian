@@ -5,24 +5,27 @@ import (
 )
 
 type RabbitMQ struct {
-	conn *amqp.Connection
-	ch   *amqp.Channel
+	Connection *amqp.Connection
+	Channel    *amqp.Channel
 }
 
 func NewRabbitMQ(url string) (*RabbitMQ, error) {
-	conn, err := amqp.Dial(url)
+	Connection, err := amqp.Dial(url)
 	if err != nil {
 		return nil, err
 	}
-	ch, err := conn.Channel()
+	Channel, err := Connection.Channel()
 	if err != nil {
 		return nil, err
 	}
-	return &RabbitMQ{conn: conn, ch: ch}, nil
+	if err != nil {
+		return nil, err
+	}
+	return &RabbitMQ{Connection: Connection, Channel: Channel}, nil
 }
 
 func (r *RabbitMQ) Publish(queueName string, body []byte) error {
-	return r.ch.Publish(
+	return r.Channel.Publish(
 		"",
 		queueName,
 		false, // mandatory
@@ -35,9 +38,9 @@ func (r *RabbitMQ) Publish(queueName string, body []byte) error {
 }
 
 func (r *RabbitMQ) DeclareQueue(queueName string, args amqp.Table) (amqp.Queue, error) {
-	queue, err := r.ch.QueueDeclare(
+	queue, err := r.Channel.QueueDeclare(
 		queueName,
-		true, 
+		true,
 		false,
 		false,
 		false,
@@ -46,8 +49,8 @@ func (r *RabbitMQ) DeclareQueue(queueName string, args amqp.Table) (amqp.Queue, 
 	return queue, err
 }
 
-func (r *RabbitMQ) Consume(queueName string, consumerName string) (<-chan amqp.Delivery, error) {
-	msgs, err := r.ch.Consume(queueName, "", true, false, false, false, nil)
+func (r *RabbitMQ) Consume(queueName string) (<-chan amqp.Delivery, error) {
+	msgs, err := r.Channel.Consume(queueName, "", false, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +58,6 @@ func (r *RabbitMQ) Consume(queueName string, consumerName string) (<-chan amqp.D
 }
 
 func (r *RabbitMQ) Close() {
-	r.conn.Close()
-	r.ch.Close()
+	r.Connection.Close()
+	r.Channel.Close()
 }
