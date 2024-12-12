@@ -16,7 +16,6 @@ import (
 	host_handler "github.com/FelipeSoft/uptime-guardian/internal/infrastructure/http/handler/host"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/rabbitmq"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/repository"
-	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/shared"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
@@ -42,16 +41,18 @@ func main() {
 	}
 	defer queue.Close()
 
-	msgs, err := queue.Consume("icmp_queue")
+	msgs, err := queue.Consume("icmp_queue_http")
 	if err != nil {
 		log.Printf("Error on message reading from the icmp_queue %s \n", err.Error())
 	}
 
-	go func() {
-		for msg := range msgs {
-			shared.ProcessICMPMessage(msg)
-		}
-	}()
+	for i := 0; i < 5; i++ {
+		go func() {
+			for msg := range msgs {
+				fmt.Println(msg.Body)
+			}
+		}()
+	}
 
 	bcryptHashAdapter := adapter.NewBcryptHashAdapter()
 	jwtAdapter := adapter.NewJwtAdapter()

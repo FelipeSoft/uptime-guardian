@@ -14,7 +14,6 @@ import (
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/scheduler/icmp"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // consumers: metrics & websocket
@@ -43,16 +42,12 @@ func main() {
 	}
 	defer rabbitmq.Close()
 
-	args := amqp.Table{
-		"x-dead-letter-exchange":    "icmp_dlx",
-		"x-dead-letter-routing-key": "icmp_dead_letter_queue",
-	}
-	_, err = rabbitmq.DeclareQueue("icmp_queue", args)
+	_, err = rabbitmq.DeclareQueue("icmp_queue_websocket")
 	if err != nil {
 		log.Fatalf("ICMP Queue Declaring Error: %s", err.Error())
 	}
 
-	_, err = rabbitmq.DeclareQueue("icmp_dead_letter_queue", args)
+	_, err = rabbitmq.DeclareQueue("icmp_queue_http")
 	if err != nil {
 		log.Fatalf("ICMP Dead Letter Queue Declaring Error: %s", err.Error())
 	}

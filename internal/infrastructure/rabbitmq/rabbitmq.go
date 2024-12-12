@@ -37,20 +37,20 @@ func (r *RabbitMQ) Publish(queueName string, body []byte) error {
 		})
 }
 
-func (r *RabbitMQ) DeclareQueue(queueName string, args amqp.Table) (amqp.Queue, error) {
+func (r *RabbitMQ) DeclareQueue(queueName string) (amqp.Queue, error) {
 	queue, err := r.Channel.QueueDeclare(
 		queueName,
 		true,
 		false,
 		false,
 		false,
-		args,
+		nil,
 	)
 	return queue, err
 }
 
 func (r *RabbitMQ) Consume(queueName string) (<-chan amqp.Delivery, error) {
-	msgs, err := r.Channel.Consume(queueName, "", false, false, false, false, nil)
+	msgs, err := r.Channel.Consume(queueName, "", true, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}

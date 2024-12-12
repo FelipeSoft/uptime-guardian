@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	usecase "github.com/FelipeSoft/uptime-guardian/internal/application/usecase/host"
+
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/rabbitmq"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/shared"
 	"github.com/FelipeSoft/uptime-guardian/internal/infrastructure/websocket/handler"
@@ -38,12 +38,24 @@ func main() {
 	}
 	defer queue.Close()
 
-	http.Handle("/host/ws", enableCORS(websocket.Handler(handler.HostMetricsWebsocketHandler)))
-	hostMetricsConsumerUseCase := usecase.NewConsumeMetricsUseCase(queue, shared.GetWebsocketClients())
+	msgs, err := queue.Consume("icmp_queue_websocket")
+	if err != nil {
+		log.Fatalf("RabbitMQ Consumer Error: %s", err.Error())
+	}
 
-	go func() {
-		hostMetricsConsumerUseCase.ConsumeAvailableHostsMetrics()
-	}()
+	http.Handle("/host/ws", enableCORS(websocket.Handler(handler.HostMetricsWebsocketHandler)))
+
+	wsClients := shared.GetWebsocketClients()
+
+	for i := 0; i < 5; i++ {
+		go func() {
+			for msg := range msgs {
+				for client := range wsClients {
+					client.Write(msg.Body)
+				}
+			}
+		}()
+	}
 
 	fmt.Printf("Websocket Server started on %s \n", os.Getenv("WEBSOCKET_URL"))
 	err = http.ListenAndServe(os.Getenv("WEBSOCKET_URL"), nil)

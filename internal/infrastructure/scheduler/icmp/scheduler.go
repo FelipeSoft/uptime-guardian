@@ -81,9 +81,13 @@ func (ht *HostTask) executeTask() {
 	if err != nil {
 		fmt.Printf("error on logging icmp metric: %s", err.Error())
 	}
-	err = ht.queue.Publish("icmp_queue", body)
+	err = ht.queue.Publish("icmp_queue_http", body)
 	if err != nil {
-		fmt.Printf("error on queue message: %s", err.Error())
+		fmt.Printf("error on queue message: %s \n", err.Error())
+	}
+	err = ht.queue.Publish("icmp_queue_websocket", body)
+	if err != nil {
+		fmt.Printf("error on queue message: %s \n", err.Error())
 	}
 }
 
